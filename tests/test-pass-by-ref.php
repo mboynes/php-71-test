@@ -100,4 +100,40 @@ class PassByRefTest extends WP_UnitTestCase {
 		// If we made it this far, we're good.
 		$this->assertTrue( $test_ran );
 	}
+
+	function test_pass_object() {
+		add_filter( 'passes_object', function( $request, &$obj ) {
+			$obj->test_prop = 'modified 1';
+			return 'complete 1';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$test_query->pass_object();
+		$this->assertSame( 'modified 1', $test_query->test_prop );
+		$this->assertSame( 'complete 1', $test_query->request );
+	}
+
+	function test_pass_prop() {
+		add_filter( 'passes_prop', function( $request, &$prop ) {
+			$prop = 'modified 2';
+			return 'complete 2';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$test_query->pass_prop();
+		$this->assertSame( 'modified 2', $test_query->test_prop );
+		$this->assertSame( 'complete 2', $test_query->request );
+	}
+
+	function test_pass_var() {
+		add_filter( 'passes_var', function( $request, &$var ) {
+			$var = 'modified 3';
+			return 'complete 3';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$result = $test_query->pass_var();
+		$this->assertSame( 'modified 3', $result );
+		$this->assertSame( 'complete 3', $test_query->request );
+	}
 }
