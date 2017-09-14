@@ -20,13 +20,20 @@ class PassByRefTest extends WP_UnitTestCase {
 
 	function test_pre_get_posts() {
 		$post_id = self::factory()->post->create();
+
 		add_action( 'pre_get_posts', function( &$query ) use ( $post_id ) {
 			$query->query_vars = [
 				'p' => $post_id,
 			];
 		} );
 
+		$observed_qvs = false;
+		add_action( 'pre_get_posts', function( &$query ) use ( &$observed_qvs ) {
+			$observed_qvs = $query->query_vars;
+		}, 100 );
+
 		$this->assertSame( [ $post_id ], array_column( get_posts( 'name=qqqqqqq' ), 'ID' ) );
+		$this->assertSame( [ 'p' => $post_id ], $observed_qvs );
 	}
 
 	function test_posts_request() {
