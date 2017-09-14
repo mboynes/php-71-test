@@ -28,4 +28,26 @@ class PassByRefTest extends WP_UnitTestCase {
 
 		$this->assertSame( [ $post_id ], array_column( get_posts( 'name=qqqqqqq' ), 'ID' ) );
 	}
+
+	function test_posts_request() {
+		add_filter( 'posts_request', function( $request, &$query ) {
+			$query->post_count = 98765;
+			return $request;
+		}, 10, 2 );
+
+		$test_ran = false;
+		add_filter( 'posts_pre_query', function( $posts, &$query ) use ( &$test_ran ) {
+			if ( 98765 !== $query->post_count ) {
+				throw new \Exception( 'Failed asserting that post count matches' );
+			} else {
+				$test_ran = true;
+			}
+			return $posts;
+		}, 10, 2 );
+
+		$test_query = new \WP_Query( [ 'post_type' => 'post' ] );
+
+		// If we made it this far, we're good.
+		$this->assertTrue( $test_ran );
+	}
 }
