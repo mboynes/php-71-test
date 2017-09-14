@@ -102,7 +102,7 @@ class PassByRefTest extends WP_UnitTestCase {
 	}
 
 	function test_pass_object() {
-		add_filter( 'passes_object', function( $request, &$obj ) {
+		add_filter( 'passes_object', function( $request, $obj ) {
 			$obj->test_prop = 'modified 1';
 			return 'complete 1';
 		}, 10, 2 );
@@ -114,25 +114,73 @@ class PassByRefTest extends WP_UnitTestCase {
 	}
 
 	function test_pass_prop() {
-		add_filter( 'passes_prop', function( $request, &$prop ) {
+		add_filter( 'passes_prop', function( $request, $prop ) {
 			$prop = 'modified 2';
 			return 'complete 2';
 		}, 10, 2 );
 
 		$test_query = new \Object_Stub();
 		$test_query->pass_prop();
-		$this->assertSame( 'modified 2', $test_query->test_prop );
+		$this->assertNull( $test_query->test_prop );
 		$this->assertSame( 'complete 2', $test_query->request );
 	}
 
 	function test_pass_var() {
-		add_filter( 'passes_var', function( $request, &$var ) {
+		add_filter( 'passes_var', function( $request, $var ) {
 			$var = 'modified 3';
 			return 'complete 3';
 		}, 10, 2 );
 
 		$test_query = new \Object_Stub();
 		$result = $test_query->pass_var();
+		$this->assertNull( $result );
+		$this->assertSame( 'complete 3', $test_query->request );
+	}
+
+	function test_pass_object_by_ref() {
+		add_filter( 'passes_object', function( $request, &$obj ) {
+			$obj->test_prop = 'modified 1';
+			return 'complete 1';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$test_query->pass_object_by_ref();
+		$this->assertSame( 'modified 1', $test_query->test_prop );
+		$this->assertSame( 'complete 1', $test_query->request );
+	}
+
+	function test_pass_object_by_ref_implied() {
+		add_filter( 'passes_object', function( $request, $obj ) {
+			$obj->test_prop = 'modified 1';
+			return 'complete 1';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$test_query->pass_object_by_ref();
+		$this->assertSame( 'modified 1', $test_query->test_prop );
+		$this->assertSame( 'complete 1', $test_query->request );
+	}
+
+	function test_pass_prop_by_ref() {
+		add_filter( 'passes_prop', function( $request, &$prop ) {
+			$prop = 'modified 2';
+			return 'complete 2';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$test_query->pass_prop_by_ref();
+		$this->assertSame( 'modified 2', $test_query->test_prop );
+		$this->assertSame( 'complete 2', $test_query->request );
+	}
+
+	function test_pass_var_by_ref() {
+		add_filter( 'passes_var', function( $request, &$var ) {
+			$var = 'modified 3';
+			return 'complete 3';
+		}, 10, 2 );
+
+		$test_query = new \Object_Stub();
+		$result = $test_query->pass_var_by_ref();
 		$this->assertSame( 'modified 3', $result );
 		$this->assertSame( 'complete 3', $test_query->request );
 	}
